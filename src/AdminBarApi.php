@@ -35,7 +35,7 @@ class AdminBarApi extends AbstractEndpoint {
 			'logout_url' => wp_logout_url(),
 			'edit_page_url' => '',
 			'widgets' => $wp_admin_bar->get_node( 'new-content' ),
-		]);
+		];
 
 		return $this->filter_data( $data );
 	}
