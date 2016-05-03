@@ -25,7 +25,7 @@ class AdminBarApi extends AbstractEndpoint {
 	 */
 	public function endpoint_callback( \WP_REST_Request $request ) {
 		global $wp_admin_bar;
-		
+
 		$current_user = wp_get_current_user();
 
 		$data = [
