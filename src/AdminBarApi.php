@@ -25,7 +25,7 @@ class AdminBarApi extends AbstractEndpoint {
 	 */
 	public function endpoint_callback( \WP_REST_Request $request ) {
 		global $wp_admin_bar;
-		
+
 		$current_user = wp_get_current_user();
 
 		$data = [
@@ -34,7 +34,7 @@ class AdminBarApi extends AbstractEndpoint {
 			'dashboard_url' => admin_url(),
 			'logout_url' => wp_logout_url(),
 			'edit_page_url' => '',
-			'widgets' => $wp_admin_bar->get_node('new-content'),
+			'widgets' => $wp_admin_bar->get_node( 'new-content' ),
 		]);
 
 		return $this->filter_data( $data );

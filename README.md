@@ -66,6 +66,7 @@ add_filter( 'ln_endpoints_api_namespace', function( $namespace, $endpoint ) {
 ```
 
 #### ln_endpoints_api_version
+
 Customise the API version ('v1' in ```/wp-json/leean/v1/admin-bar```)
 
 ```php
@@ -74,12 +75,13 @@ add_filter( 'ln_endpoints_api_version', function( $version, $endpoint ) {
 }, 10, 2 );
 ```
 
-#### ln_endpoints_data
+#### ln_endpoints_data  
+
 Customise the results just before they are sent.
 
 ```php
 add_filter( 'ln_endpoints_data', function( $data, $endpoint ) {
-    $data['site_name] = 'New Site Name';
+    $data['site_name'] = 'New Site Name';
     return $data;
 }, 10, 3 );
 ```
