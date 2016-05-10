@@ -7,96 +7,128 @@ use Lean\AbstractEndpoint;
  */
 class AdminBarApi extends AbstractEndpoint {
 
-  /**
-   * Endpoint path
-   *
-   * @Override
-   * @var String
-   */
-  protected $endpoint = '/admin-bar';
+	/**
+	 * Endpoint path
+	 *
+	 * @Override
+	 * @var String
+	 */
+	protected $endpoint = '/admin-bar';
 
-  /**
-   * Cookie name
-   *
-   * @var String
-   */
-  protected $cookieName = 'wp_admin_bar_user'; 
+	/**
+	 * Cookie name
+	 *
+	 * @var String
+	 */
+	protected $cookie_name = 'wp_admin_bar_user';
 
-  /**
-   * Cookie path
-   *
-   * @var String
-   */
-  protected $cookiePath = ''; 
+	/**
+	 * Cookie path
+	 *
+	 * @var String
+	 */
+	protected $cookie_path = '';
 
-  /**
-   * Cookie domain
-   *
-   * @var String
-   */
-  protected $cookieDomain = '';
+	/**
+	 * Cookie domain
+	 *
+	 * @var String
+	 */
+	protected $cookie_domain = '';
 
-  /**
-   * Constructor
-   */
-  function __construct() {
-    add_action('wp_login', [ $this, 'login_action' ], 10, 1);
-    add_action('wp_logout', [ $this, 'logout_action' ]);
+	/**
+	 * Constructor
+	 */
+	function __construct() {
+		add_action( 'wp_login', [ $this, 'login_action' ] );
+		add_action( 'wp_logout', [ $this, 'logout_action' ] );
 
-    $this->cookiePath = parse_url( get_option( 'siteurl' ), PHP_URL_PATH );
-    $this->cookieDomain = '.' . parse_url( get_option( 'siteurl' ), PHP_URL_HOST );
-  }
+		$parsed = wp_parse_url( get_option( 'siteurl' ) );
 
-  /**
-   * Login action listener
-   */
-  public function login_action( $user_login ) {
-    $adminBarUser = $_COOKIE[$this->cookieName];
+		$this->cookie_path = $parsed['path'];
+		$this->cookie_domain = '.' . $parsed['host'];
+	}
 
-    if ( $adminBarUser != $user_login ) {
-      setcookie( $this->cookieName, $user_login, strtotime( '+1 day' ), $this->cookiePath, $this->cookieDomain );
-    }
-  }
+	/**
+	 * Login action listener
+	 */
+	public function login_action( $user_login ) {
+		$admin_bar_user = '';
 
-  /**
-   * Logout action listener
-   */
-  public function logout_action() {
-    setcookie( $this->cookieName, '', strtotime( '-1 day' ), $this->cookiePath, $this->cookieDomain );
-  }
+		if ( isset( $_COOKIE[ $this->cookie_name ] ) ) {
+			$admin_bar_user = sanitize_text_field( wp_unslash( $_COOKIE[ $this->cookie_name ] ) );
+		}
 
-  /**
-   * Get the data.
-   *
-   * @Override
-   * @param \WP_REST_Request $request The request.
-   *
-   * @return array|\WP_Error
-   */
-  public function endpoint_callback( \WP_REST_Request $request ) {
-    $adminBarUser = $_COOKIE[$this->cookieName];
-    $admin_url = admin_url();
-    $post_types = get_post_types( array(), 'objects' );
-    $post_types_data = array();
+		if ( $admin_bar_user !== $user_login ) {
+			setcookie( $this->cookie_name, $user_login, 0, $this->cookie_path, $this->cookie_domain );
+		}
+	}
 
-    foreach ($post_types as $type) {
-      if ( $type->show_in_menu === true ) {
-        $post_types_data[] = array(
-          'name' => $type->labels->singular_name,
-          'url' => $admin_url . 'post-new.php?post_type=' . $type->name
-        );
-      }
-    }
+	/**
+	 * Logout action listener
+	 */
+	public function logout_action() {
+		setcookie( $this->cookie_name, '', strtotime( '-1 day' ), $this->cookie_path, $this->cookie_domain );
+	}
 
-    $data = [
-      'site_name' => get_bloginfo( 'name' ),
-      'user_name' => $adminBarUser,
-      'dashboard_url' => $admin_url,
-      'logout_url' => wp_logout_url(),
-      'edit_page_url' => $admin_url . 'post.php?action=edit&post=',
-      'post_types' => $post_types_data,
-    ];
+	/**
+	 * Get the data.
+	 *
+	 * @Override
+	 * @param \WP_REST_Request $request The request.
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function endpoint_callback( \WP_REST_Request $request ) {
+		$admin_url = admin_url();
+		$edit_url = '';
+		$admin_bar_user = '';
+		$user_id = 0;
 
-    return $this->filter_data( $data );
-  }
+		if ( isset( $_COOKIE[ $this->cookie_name ] ) ) {
+			$admin_bar_user = sanitize_text_field( wp_unslash( $_COOKIE[ $this->cookie_name ] ) );
+		}
+
+		if ( '' !== $admin_bar_user ) {
+			$user = get_userdatabylogin( $admin_bar_user );
+
+			if ( $user ) {
+				 $user_id = $user->ID;
+			}
+		}
+
+		if ( 0 !== $user_id && user_can( $user_id, 'edit_posts' ) ) {
+			$edit_url = $admin_url . 'post.php?action=edit&post=';
+		}
+
+		$data = [
+			'site_name' => get_bloginfo( 'name' ),
+			'user_name' => $admin_bar_user,
+			'dashboard_url' => $admin_url,
+			'logout_url' => wp_logout_url(),
+			'edit_page_url' => $edit_url,
+			'post_types' => $this->post_types( $admin_url, $user_id ),
+		];
+
+		return $this->filter_data( $data );
+	}
+
+	/**
+	 * Get available post types
+	 */
+	private function post_types( $admin_url, $user_id ) {
+		$post_types = get_post_types( [], 'objects' );
+		$post_types_data = [];
+
+		foreach ( $post_types as $type ) {
+			if ( $type->show_in_menu && user_can( $user_id, $type->cap->create_posts ) ) {
+				$post_types_data[] = [
+					'name' => $type->labels->singular_name,
+					'url' => $admin_url . 'post-new.php?post_type=' . $type->name,
+				];
+			}
+		}
+
+		return $post_types_data;
+	}
 }
