@@ -10,5 +10,7 @@
     <exclude name="Squiz.Commenting.FileComment" />
     <exclude name="Squiz.Commenting.FunctionComment" />
     <exclude name="WordPress.Files.FileName" />
+    <exclude name="WordPress.VIP.RestrictedVariables" />
+    <exclude name="WordPress.VIP.RestrictedFunctions" />
   </rule>
 </ruleset>

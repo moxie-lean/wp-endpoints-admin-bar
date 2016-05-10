@@ -55,8 +55,8 @@ class AdminBarApi extends AbstractEndpoint {
 	public function login_action( $user_login ) {
 		$admin_bar_user = '';
 
-		if ( isset( $_COOKIE[ $this->cookie_name ] ) ) {
-			$admin_bar_user = sanitize_text_field( wp_unslash( $_COOKIE[ $this->cookie_name ] ) );
+		if ( isset( $_COOKIE[ $this->cookie_name ] ) ) { // Input var okay.
+			$admin_bar_user = sanitize_text_field( wp_unslash( $_COOKIE[ $this->cookie_name ] ) ); // Input var okay.
 		}
 
 		if ( $admin_bar_user !== $user_login ) {
@@ -85,8 +85,8 @@ class AdminBarApi extends AbstractEndpoint {
 		$admin_bar_user = '';
 		$user_id = 0;
 
-		if ( isset( $_COOKIE[ $this->cookie_name ] ) ) {
-			$admin_bar_user = sanitize_text_field( wp_unslash( $_COOKIE[ $this->cookie_name ] ) );
+		if ( isset( $_COOKIE[ $this->cookie_name ] ) ) { // Input var okay.
+			$admin_bar_user = sanitize_text_field( wp_unslash( $_COOKIE[ $this->cookie_name ] ) ); // Input var okay.
 		}
 
 		if ( '' !== $admin_bar_user ) {
