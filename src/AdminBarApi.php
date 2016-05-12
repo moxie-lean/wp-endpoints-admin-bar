@@ -23,30 +23,11 @@ class AdminBarApi extends AbstractEndpoint {
 	protected $cookie_name = 'wp_admin_bar_user';
 
 	/**
-	 * Cookie path
-	 *
-	 * @var String
-	 */
-	protected $cookie_path = '';
-
-	/**
-	 * Cookie domain
-	 *
-	 * @var String
-	 */
-	protected $cookie_domain = '';
-
-	/**
 	 * Constructor
 	 */
 	function __construct() {
 		add_action( 'wp_login', [ $this, 'login_action' ] );
 		add_action( 'wp_logout', [ $this, 'logout_action' ] );
-
-		$parsed = wp_parse_url( get_option( 'siteurl' ) );
-
-		$this->cookie_path = $parsed['path'];
-		$this->cookie_domain = '.' . $parsed['host'];
 	}
 
 	/**
@@ -54,13 +35,14 @@ class AdminBarApi extends AbstractEndpoint {
 	 */
 	public function login_action( $user_login ) {
 		$admin_bar_user = '';
+		$parsed = wp_parse_url( home_url() );
 
 		if ( isset( $_COOKIE[ $this->cookie_name ] ) ) { // Input var okay.
 			$admin_bar_user = sanitize_text_field( wp_unslash( $_COOKIE[ $this->cookie_name ] ) ); // Input var okay.
 		}
 
 		if ( $admin_bar_user !== $user_login ) {
-			setcookie( $this->cookie_name, $user_login, 0, $this->cookie_path, $this->cookie_domain );
+			setcookie( $this->cookie_name, $user_login, 0, '/', '.' . $parsed['host'] );
 		}
 	}
 
@@ -68,7 +50,9 @@ class AdminBarApi extends AbstractEndpoint {
 	 * Logout action listener
 	 */
 	public function logout_action() {
-		setcookie( $this->cookie_name, '', strtotime( '-1 day' ), $this->cookie_path, $this->cookie_domain );
+		$parsed = wp_parse_url( home_url() );
+
+		setcookie( $this->cookie_name, '', strtotime( '-1 day' ), '/', '.' . $parsed['host'] );
 	}
 
 	/**
