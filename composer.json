@@ -2,7 +2,7 @@
   "name": "moxie-lean/wp-endpoints-admin-bar",
   "description": "Generic endpoint to expose admin bar configuration via WP-API.",
   "keywords": ["wordpress", "api"],
-  "homepage": "https://github.com/moxie-leean/wp-endpoints-admin-bar",
+  "homepage": "https://github.com/moxie-lean/wp-endpoints-admin-bar",
   "type": "library",
   "license": "MIT",
   "authors": [
