@@ -68,6 +68,7 @@ class AdminBarApi extends AbstractEndpoint {
 		$edit_url = '';
 		$admin_bar_user = '';
 		$user_id = 0;
+		$user = false;
 
 		if ( isset( $_COOKIE[ $this->cookie_name ] ) ) { // Input var okay.
 			$admin_bar_user = sanitize_text_field( wp_unslash( $_COOKIE[ $this->cookie_name ] ) ); // Input var okay.
@@ -77,7 +78,7 @@ class AdminBarApi extends AbstractEndpoint {
 			$user = get_userdatabylogin( $admin_bar_user );
 
 			if ( $user ) {
-				 $user_id = $user->ID;
+				$user_id = $user->ID;
 			}
 		}
 
@@ -92,6 +93,10 @@ class AdminBarApi extends AbstractEndpoint {
 			'logout_url' => wp_logout_url(),
 			'edit_page_url' => $edit_url,
 			'post_types' => $this->post_types( $admin_url, $user_id ),
+			'nicename' => $user ? $user->user_nicename : '',
+			'display_name' => $user ? $user->display_name : '',
+			'first_name' => $user_id ? get_user_meta( $user_id, 'first_name', true ) : '',
+			'last_name' => $user_id ? get_user_meta( $user_id, 'last_name', true ) : '',
 		];
 
 		return $this->filter_data( $data );
