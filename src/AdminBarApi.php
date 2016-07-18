@@ -97,6 +97,7 @@ class AdminBarApi extends AbstractEndpoint {
 			'display_name' => $user ? $user->display_name : '',
 			'first_name' => $user_id ? get_user_meta( $user_id, 'first_name', true ) : '',
 			'last_name' => $user_id ? get_user_meta( $user_id, 'last_name', true ) : '',
+			'email' => $user_id ?  $user->user_email : '',
 		];
 
 		return $this->filter_data( $data );
